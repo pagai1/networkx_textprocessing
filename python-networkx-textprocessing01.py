@@ -5,6 +5,15 @@ import time
 import sys
 import json
 import csv
+import algoPackage
+
+from algoPackage.pageRank import algo_pagerank
+from algoPackage.hits import get_hits
+from algoPackage.betweenness_centrality import algo_betweenness_centrality 
+from algoPackage.shortestPath import all_algo_shortest_path,algo_shortest_path
+from helpers.networkx_load_n_save import *
+from helpers.generalStuff import *
+
 
 from builtins import len
 from networkx.algorithms.coloring.greedy_coloring_with_interchange import Node
@@ -14,20 +23,7 @@ from _operator import itemgetter
 from xlwt.ExcelFormulaLexer import false_pattern
 from operator import __truediv__
 
-
 # General functionality
-def to_ms(time):
-    return ("%.3f" % time)
-
-def import_node_link_data_to_graph(inputfile):
-    file_to_read = open(inputfile, 'r')
-    json_data = json.loads(file_to_read.read())    
-    return json_graph.node_link_graph(json_data, directed=True, multigraph=False)
-
-def export_graph_to_node_link_data(G,outputfile):
-    print("Exporting graph to node_link_data-file")
-    file_to_write = open(outputfile, 'w')
-    file_to_write.write(json.dumps(json_graph.node_link_data(G)))
 
 def get_column_names(filereader):
   headers = next(filereader, None)
@@ -59,75 +55,19 @@ def draw_graph(Graph):
     plt.plot()
     plt.show()
 
-
-# Algorithms
-def get_hits(G):
-    hubs_auths = {}
-    algoTime=time.time() 
-    peng = nx.hits(G,max_iter=100,normalized=True)
-    print("RUNTIME Hits - " +  str(len(G.nodes())) + " entries - " + to_ms((time.time() - algoTime)) + "s.")   
-    for dings in peng:
-        for bums in dict(sorted(dings.items(),key=lambda item: item[1])):
-            print(bums,dings[bums],G.nodes[bums]['name'])
-#    for bums in nx.hits(G,max_iter=500,normalized=True):
-#        for bla in bums:
-#            print(str(bla))
-
-def algo_betweenness_centrality(G):
-#    actor_list=[x for x,y in G.nodes(data=True) if y['type'] == 'actor']
-#    subG = G.subgraph(actor_list)
-    dict_nodes = []
-    algoTime=time.time()    
-    dict_nodes = nx.betweenness_centrality(G,normalized=False, endpoints=False);
-    print("RUNTIME BetweennessCentrality - " +  str(len(G.nodes())) + " entries - " + to_ms((time.time() - algoTime)) + "s.")   
-    print("Result:")
-    for bums in dict(sorted(dict_nodes.items(), key=lambda item: item[1])):
-        print(bums,dict_nodes[bums],G.nodes[bums]['name'])
-#    print("RUNTIME ClosenessCentrality - " +  str(limit) + " entries - " + str(len(actor_list)) + " actors : " + to_ms((time.time() - algoTime)) + "s.")
-
-
-def algo_shortest_path(G):
-    actor_list=[x for x,y in G.nodes(data=True) if y['type'] == 'actor']
-    subG = G.subgraph(actor_list)
-    print("Example: Calculating shortest path from anyone to Brad Pitt")
-    start_time=time.time()
-    for actor in actor_list:
-        try:
-            path = nx.shortest_path(subG, source=(actor), target='Brad Pitt')
-        except nx.NetworkXNoPath as e:
-            path = e
-        except nx.NodeNotFound as e:
-            path = e
-    #     print(path)
-    end_time=time.time()
-    print("RUNTIME ShortestPath: " + str(end_time - start_time) )
-
-def algo_pagerank(G):
-    print("Calculating pagerank")
-    actor_list=[x for x,y in G.nodes(data=True) if y['type'] == 'actor']
-    subG = G.subgraph(actor_list)
-    start_time = time.time()
-    calculation = nx.pagerank(subG, alpha=0.85, weight='count', tol=1e-10)
-    end_time = time.time()
-    print("Result:")
-    for bums in dict(sorted(calculation.items(), key=lambda item: item[1])):
-        print(bums)
-    print("RUNTIME PageRank: ", end_time - start_time)
-
-
 def create_graph_from_neo4j_csv(G,filePath):
     with open(filePath,'r') as csv_file:
         reader = csv.DictReader(csv_file,quotechar = '"', delimiter=',')
         for line in reader:
             if line['_id'] != "":
-                G.add_node(line['_id'], weight=line['occur'], label=line['_labels'], name=line['name'])
-            else:
-                G.add_edge(line['_start'],line['_end'],type=line['_type'],cost=line['cost'],count=['count'],dice=['dice'])
-                G.add_edge(line['_end'],line['_start'],type=line['_type'],cost=line['cost'],count=['count'],dice=['dice']) 
+                G.add_node(line['name'], weight=line['occur'], label=line['_labels'].replace(":",""), name=line['name'])
+            if line['_type'] == "IS_CONNECTED":
+                G.add_edge(line['_start'],line['_end'],type=line['_type'],cost=float(line['cost']),count=int(line['count']),dice=line['dice'])
+                #G.add_edge(line['_end'],line['_start'],type=line['_type'],cost=float(line['cost']),count=int(line['count']),dice=line['dice']) 
  
     start_time = time.time() 
-    dict_nodes = nx.closeness_centrality(G)
-    print("ZEIT: " + str(time.time() - start_time))
+    #dict_nodes = nx.closeness_centrality(G)
+    #print("ZEIT: " + str(time.time() - start_time))
     #print(G.nodes(data=True)) 
 
     #for bums in dict(sorted(dict_nodes.items(), key=lambda item: item[1])):
@@ -142,8 +82,6 @@ print("HEADERS : " + str(get_column_names(header_reader)))
 
 create_graph_from_neo4j_csv(G, filePath)
 
-
-
 #### IMPORT FILE
 #start_time = time.time()
 #G = import_node_link_data_to_graph('/tmp/node_link_data.json')
@@ -156,11 +94,13 @@ create_graph_from_neo4j_csv(G, filePath)
 
 # ALGOS
 #algo_shortest_path(G)
+#all_algo_shortest_path(G,forceSubGraphCreation=True,nodeType='SINGLE_NODE')
+all_algo_shortest_path(G,nodeType='SINGLE_NODE')
 #algo_pagerank(G)
 #algo_betweenness_centrality(G)
-get_hits(G)
+#get_hits(G)
 
-draw_graph(G)
+#draw_graph(G)
 
 
 #print(pagerank_scipy(subG))
