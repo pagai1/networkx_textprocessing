@@ -95,8 +95,8 @@ create_graph_from_neo4j_csv(G, filePath)
 # ALGOS
 #algo_shortest_path(G)
 #all_algo_shortest_path(G,forceSubGraphCreation=True,nodeType='SINGLE_NODE')
-all_algo_shortest_path(G,nodeType='SINGLE_NODE')
-#algo_pagerank(G)
+#all_algo_shortest_path(G,nodeType='SINGLE_NODE')
+algo_pagerank(G)
 #algo_betweenness_centrality(G)
 #get_hits(G)
 
