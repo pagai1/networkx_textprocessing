@@ -6,14 +6,20 @@ import sys
 import json
 import csv
 import algoPackage
+import os
 
-from algoPackage.pageRank import algo_pagerank
-from algoPackage.hits import get_hits
-from algoPackage.betweenness_centrality import algo_betweenness_centrality 
-from algoPackage.shortestPath import all_algo_shortest_path,algo_shortest_path
-from helpers.networkx_load_n_save import *
+#from algoPackage.pageRank import algo_pagerank
+#from algoPackage.hits import get_hits
+#from algoPackage.betweenness_centrality import algo_betweenness_centrality 
+#from algoPackage.shortestPath import all_algo_shortest_path,algo_shortest_path
+#from helpers.networkx_load_n_save import *
+#from helpers.generalStuff import *
+
+# import own helper-modules
+sys.path.append(os.path.abspath(os.path.join(os.path.realpath(__file__),"../../networkx_modules")))
 from helpers.generalStuff import *
-
+from helpers.networkx_load_n_save import *
+from algoPackage.pageRank import *
 
 from builtins import len
 from networkx.algorithms.coloring.greedy_coloring_with_interchange import Node
