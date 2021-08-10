@@ -65,29 +65,72 @@ def draw_graph(Graph):
     plt.plot()
     plt.show()
 
-
-         
-G = nx.Graph()
 filePath='/home/pagai/graph-data/cooccsdatabase/cooccsdb.csv'
 
-create_graph_from_neo4j_csv(G, filePath)
+G = create_graph_from_neo4j_csv(filePath, inputDirectedData=True, outputDirectedGraph=True)
+print(nx.info(G))
 
-#### IMPORT FILE
-#start_time = time.time()
-#G = import_node_link_data_to_graph('/tmp/node_link_data.json')
-#print("File load finished in " + str(time.time() - start_time))
+############ Export/Import ##########
+if createByImport:
+    importFile='/tmp/node_link_data_export_'+str(limit)+'.json'
+    print("IMPORTING " + importFile)
+    start_time = time.time()
+    G = import_node_link_data_to_graph(importFile, verbose=verbose)
+    if (verbose): 
+        print("IMPORTED FILE: " + importFile)
+        print(nx.info(G))
 
-# EXPORT FILE
-#start_time = time.time()
-#export_graph_to_node_link_data(G, '/tmp/node_link_data_5000.json')
-#print("File export finished in : " + str(time.time() - start_time))
+if doExport:
+    export_graph_to_node_link_data(G, '/tmp/node_link_data_export_'+str(limit)+'.json', verbose=verbose)
+
+if doAlgo:
+############ ALGOS #############
+    
+    #algo_shortest_path(G)
+    #algo_all_pairs_dijkstra(G,verbose=True,inputWeight='weight')
+    #algo_all_pairs_bellman_ford_path(G,verbose=True,inputWeight='weight')
+    
+    #all_pairs_shortest_path(G)
+    
+    #### PAGERANK
+    weightInputForAlgos="weight"
+    #weightInputForAlgos=None
+    
+    print("==============================")
+    #algo_pagerank(G, "default",  weightInput=weightInputForAlgos, verbose=algoVerbose, maxLineOutput=15)
+    # NUMPY IS OBSOLETE
+    #algo_pagerank(G, "numpy", weightInput=weightInputForAlgos, verbose=algoVerbose, maxLineOutput=10)
+    algo_pagerank(G, "scipy", weightInput=weightInputForAlgos, verbose=algoVerbose, maxLineOutput=0)
+    print("==============================")
+    print("EXECUTION TOOK: " + to_ms(time.time() - start_time))
+    
+    
+    #### SIMRANK
+    #algo_simRank(G,verbose=True,max_iterations=1)
+    #algo_degree_centrality(G, verbose=True)
+    #algo_all_pairs_shortest_path(G,verbose=False,inputWeight='weight')
+    
+    #### OWN DEGREE CENTRALITY
+    #peng = sorted(G.degree, key=lambda x: x[1], reverse=True)
+    #if (verbose):
+    #    for bums in peng:
+    #        print(bums)
+    
+    
+    #algo_degree_centrality(G, verbose=False)
+    
+    
+    #print("TIME: " + to_ms(end_time - start_time))
+    
+        
+    #print(str(G.number_of_nodes()) + "," + str(G.number_of_edges()) + "," + to_ms(end_time-start_time))
+    #algo_jaccard_coefficient(G,G.edges(),verbose=True) 
+    
+    #get_hits(G)
+    #draw_all_shortest_path_for_single_node(G,"1")
+    #all_shortest_path_for_single_node(G,"12")
 
 
-# ALGOS
-# algo_shortest_path(G)
-# all_algo_shortest_path(G,forceSubGraphCreation=True,nodeType='SINGLE_NODE')
-# all_algo_shortest_path(G,nodeType='SINGLE_NODE')
-# algo_pagerank(G)
-# algo_betweenness_centrality(G)
-# get_hits(G)
+
+
 
