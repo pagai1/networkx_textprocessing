@@ -66,9 +66,17 @@ def draw_graph(Graph):
     plt.show()
 
 filePath='/home/pagai/graph-data/cooccsdatabase/cooccsdb.csv'
+verbose=False
+doExport=False
+createByImport=False
+doAlgo=False
+algoVerbose=False
+
+importExportFileName = "/tmp/node_link_data_export_cooccsdb.json"
 
 G = create_graph_from_neo4j_csv(filePath, inputDirectedData=True, outputDirectedGraph=True)
-print(nx.info(G))
+if verbose:
+    print(nx.info(G))
 
 ############ Export/Import ##########
 if createByImport:
@@ -83,9 +91,21 @@ if createByImport:
 if doExport:
     export_graph_to_node_link_data(G, '/tmp/node_link_data_export_'+str(limit)+'.json', verbose=verbose)
 
-if doAlgo:
+########## DELETE-test Clear ################
+numberOfNodes = G.number_of_nodes()
+numberOfEdges = G.number_of_edges()
+export_graph_to_node_link_data(G, importExportFileName+"_full", verbose=verbose)
+export_graph_to_node_link_data(G, importExportFileName, verbose=verbose)
+
+start_time_clear=time.time()
+G.clear()
+export_graph_to_node_link_data(G, importExportFileName, verbose=verbose)
+end_time_clear=time.time()
+print(numberOfNodes, numberOfEdges, to_ms(end_time_clear - start_time_clear), sep=",")
+
 ############ ALGOS #############
-    
+if doAlgo:
+
     #algo_shortest_path(G)
     #algo_all_pairs_dijkstra(G,verbose=True,inputWeight='weight')
     #algo_all_pairs_bellman_ford_path(G,verbose=True,inputWeight='weight')
