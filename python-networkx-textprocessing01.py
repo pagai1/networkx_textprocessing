@@ -67,20 +67,22 @@ def draw_graph(Graph):
 
 filePath='/home/pagai/graph-data/cooccsdatabase/cooccsdb.csv'
 verbose=False
-doExport=False
+doExport=True
 createByImport=False
 doAlgo=False
 algoVerbose=False
+deleteTest=False
 
 importExportFileName = "/tmp/node_link_data_export_cooccsdb.json"
 
+startTime = time.time()
 G = create_graph_from_neo4j_csv(filePath, inputDirectedData=True, outputDirectedGraph=True)
 if verbose:
     print(nx.info(G))
 
 ############ Export/Import ##########
 if createByImport:
-    importFile='/tmp/node_link_data_export_'+str(limit)+'.json'
+    importFile='/tmp/node_link_data_export_cooccs.json'
     print("IMPORTING " + importFile)
     start_time = time.time()
     G = import_node_link_data_to_graph(importFile, verbose=verbose)
@@ -89,19 +91,21 @@ if createByImport:
         print(nx.info(G))
 
 if doExport:
-    export_graph_to_node_link_data(G, '/tmp/node_link_data_export_'+str(limit)+'.json', verbose=verbose)
+    export_graph_to_node_link_data(G, '/tmp/node_link_data_export_cooccs.json', verbose=verbose)
+endTime = time.time()
+print(G.number_of_nodes(), G.number_of_edges(), to_ms(endTime - startTime), sep=",")
 
 ########## DELETE-test Clear ################
-numberOfNodes = G.number_of_nodes()
-numberOfEdges = G.number_of_edges()
-export_graph_to_node_link_data(G, importExportFileName+"_full", verbose=verbose)
-export_graph_to_node_link_data(G, importExportFileName, verbose=verbose)
-
-start_time_clear=time.time()
-G.clear()
-export_graph_to_node_link_data(G, importExportFileName, verbose=verbose)
-end_time_clear=time.time()
-print(numberOfNodes, numberOfEdges, to_ms(end_time_clear - start_time_clear), sep=",")
+if deleteTest:
+    numberOfNodes = G.number_of_nodes()
+    numberOfEdges = G.number_of_edges()
+    export_graph_to_node_link_data(G, importExportFileName+"_full", verbose=verbose)
+    
+    start_time_clear=time.time()
+    G.clear()
+    export_graph_to_node_link_data(G, importExportFileName, verbose=verbose)
+    end_time_clear=time.time()
+    print(numberOfNodes, numberOfEdges, to_ms(end_time_clear - start_time_clear), sep=",")
 
 ############ ALGOS #############
 if doAlgo:
